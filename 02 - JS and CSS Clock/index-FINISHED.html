@@ -1,99 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>JS + CSS Clock</title>
-</head>
-<body>
-
-
+  <head>
+    <meta charset="UTF-8" />
+    <title>JS + CSS Clock</title>
+  </head>
+  <body>
     <div class="clock">
       <div class="clock-face">
-        <div class="hand hour-hand"></div>
-        <div class="hand min-hand"></div>
-        <div class="hand second-hand"></div>
+        <div class="hours-container">
+          <div class="hours"></div>
+        </div>
+        <div class="minutes-container">
+          <div class="minutes"></div>
+        </div>
+        <div class="seconds-container">
+          <div class="seconds"></div>
+        </div>
       </div>
     </div>
 
+    <style>
+      html {
+        background: #018ded url(https://unsplash.it/1500/1000?image=881&blur=5);
+        background-size: cover;
+        font-family: "helvetica neue";
+        text-align: center;
+        font-size: 10px;
+      }
 
-  <style>
-    html {
-      background: #018DED url(https://unsplash.it/1500/1000?image=881&blur=5);
-      background-size: cover;
-      font-family: 'helvetica neue';
-      text-align: center;
-      font-size: 10px;
-    }
+      body {
+        margin: 0;
+        font-size: 2rem;
+        display: flex;
+        flex: 1;
+        min-height: 100vh;
+        align-items: center;
+      }
+      .clock {
+        width: 30rem;
+        height: 30rem;
+        border: 20px solid white;
+        border-radius: 50%;
+        margin: 50px auto;
+        position: relative;
+        padding: 2rem;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1), inset 0 0 0 3px #efefef,
+          inset 0 0 10px black, 0 0 10px rgba(0, 0, 0, 0.2);
+      }
 
-    body {
-      margin: 0;
-      font-size: 2rem;
-      display: flex;
-      flex: 1;
-      min-height: 100vh;
-      align-items: center;
-    }
+      .clock-face {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform: translateY(
+          -3px
+        ); /* account for the height of the clock hands */
+      }
 
-    .clock {
-      width: 30rem;
-      height: 30rem;
-      border: 20px solid white;
-      border-radius: 50%;
-      margin: 50px auto;
-      position: relative;
-      padding: 2rem;
-      box-shadow:
-        0 0 0 4px rgba(0,0,0,0.1),
-        inset 0 0 0 3px #EFEFEF,
-        inset 0 0 10px black,
-        0 0 10px rgba(0,0,0,0.2);
-    }
+      .hours {
+        background: #000;
+        height: 20%;
+        left: 48.75%;
+        position: absolute;
+        top: 30%;
+        transform-origin: 50% 100%;
+        width: 2.5%;
+      }
 
-    .clock-face {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transform: translateY(-3px); /* account for the height of the clock hands */
-    }
+      .minutes {
+        background: #000;
+        height: 40%;
+        left: 49%;
+        position: absolute;
+        top: 10%;
+        transform-origin: 50% 100%;
+        width: 2%;
+      }
 
-    .hand {
-      width: 50%;
-      height: 6px;
-      background: black;
-      position: absolute;
-      top: 50%;
-      transform-origin: 100%;
-      transform: rotate(90deg);
-      transition: all 0.05s;
-      transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
-    }
-</style>
+      .seconds {
+        background: #000;
+        height: 45%;
+        left: 49.5%;
+        position: absolute;
+        top: 14%;
+        transform-origin: 50% 80%;
+        width: 1%;
+        z-index: 8;
+      }
+      .minutes-container,
+      .hours-container,
+      .seconds-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+    </style>
+    <script>
+      function initLocalClocks() {
+        // Get the local time using JS
+        let date = new Date();
+        let seconds = date.getSeconds();
+        let minutes = date.getMinutes();
+        let hours = date.getHours();
 
-<script>
-  const secondHand = document.querySelector('.second-hand');
-  const minsHand = document.querySelector('.min-hand');
-  const hourHand = document.querySelector('.hour-hand');
+        // Create an object with each hand and it's angle in degrees
+        let hands = [
+          {
+            hand: "hours",
+            angle: hours * 30 + minutes / 2,
+          },
+          {
+            hand: "minutes",
+            angle: minutes * 6,
+          },
+          {
+            hand: "seconds",
+            angle: seconds * 6,
+          },
+        ];
+        // Loop through each of these hands to set their angle
+        for (let j = 0; j < hands.length; j++) {
+          let elements = document.querySelectorAll("." + hands[j].hand);
+          for (let k = 0; k < elements.length; k++) {
+            elements[k].style.webkitTransform =
+              "rotateZ(" + hands[j].angle + "deg)";
+            elements[k].style.transform = "rotateZ(" + hands[j].angle + "deg)";
+            // If this is a minute hand, note the seconds position (to calculate minute position later)
+            if (hands[j].hand === "minutes") {
+              elements[k].parentNode.setAttribute(
+                "data-second-angle",
+                hands[j + 1].angle
+              );
+            }
+          }
+        }
+      }
 
-  function setDate() {
-    const now = new Date();
+      // /*
+      //  * Set a timeout for the first minute hand movement (less than 1 minute), then rotate it every minute after that
+      //  */
+      function setUpMinuteHands() {
+        // Find out how far into the minute we are
+        let containers = document.querySelectorAll(".minutes-container");
+        let secondAngle = containers[0].getAttribute("data-second-angle");
+        if (secondAngle > 0) {
+          // Set a timeout until the end of the current minute, to move the hand
+          let delay = ((360 - secondAngle) / 6 + 0.1) * 1000;
+          setTimeout(function () {
+            moveMinuteHands(containers);
+          }, delay);
+        }
+      }
 
-    const seconds = now.getSeconds();
-    const secondsDegrees = ((seconds / 60) * 360) + 90;
-    secondHand.style.transform = `rotate(${secondsDegrees}deg)`;
+      // /*
+      //  * Do the first minute's rotation
+      //  */
+      function moveMinuteHands(containers) {
+        for (let i = 0; i < containers.length; i++) {
+          containers[i].style.webkitTransform = "rotateZ(6deg)";
+          containers[i].style.transform = "rotateZ(6deg)";
+        }
+        // Then continue with a 60 second interval
+        setInterval(function () {
+          for (let i = 0; i < containers.length; i++) {
+            if (containers[i].angle === undefined) {
+              containers[i].angle = 12;
+            } else {
+              containers[i].angle += 6;
+            }
+            containers[i].style.webkitTransform =
+              "rotateZ(" + containers[i].angle + "deg)";
+            containers[i].style.transform =
+              "rotateZ(" + containers[i].angle + "deg)";
+          }
+        }, 60000);
+      }
 
-    const mins = now.getMinutes();
-    const minsDegrees = ((mins / 60) * 360) + ((seconds/60)*6) + 90;
-    minsHand.style.transform = `rotate(${minsDegrees}deg)`;
+      function moveSecondHands() {
+        let containers = document.querySelectorAll(".seconds-container");
+        setInterval(function () {
+          for (let i = 0; i < containers.length; i++) {
+            if (containers[i].angle === undefined) {
+              containers[i].angle = 6;
+            } else {
+              containers[i].angle += 6;
+            }
+            containers[i].style.webkitTransform =
+              "rotateZ(" + containers[i].angle + "deg)";
+            containers[i].style.transform =
+              "rotateZ(" + containers[i].angle + "deg)";
+          }
+        }, 1000);
+      }
 
-    const hour = now.getHours();
-    const hourDegrees = ((hour / 12) * 360) + ((mins/60)*30) + 90;
-    hourHand.style.transform = `rotate(${hourDegrees}deg)`;
-  }
-
-  setInterval(setDate, 1000);
-
-  setDate();
-
-</script>
-</body>
+      (function () {
+        // Initialise any local time clocks
+        initLocalClocks();
+        // Start the seconds container moving
+        moveSecondHands();
+        // Set the intial minute hand container transition, and then each subsequent step
+        setUpMinuteHands();
+      })();
+    </script>
+  </body>
 </html>
