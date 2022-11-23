@@ -17,6 +17,7 @@
         max="200"
         value="10"
         data-sizing="px"
+        oninput="changeValue('spacing', this.value)"
       />
 
       <label for="blur">Blur:</label>
@@ -28,18 +29,25 @@
         max="25"
         value="10"
         data-sizing="px"
+        oninput="changeValue('blur', this.value)"
       />
 
       <label for="base">Base Color</label>
-      <input id="base" type="color" name="base" value="#ffc600" />
+      <input
+        id="base"
+        type="color"
+        name="base"
+        value="#f22b07"
+        oninput="changeValue('base', this.value)"
+      />
     </div>
 
     <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500" />
 
     <style>
       :root {
-        --base: red;
-        --spacing: 30px;
+        --base: #f22b07;
+        --spacing: 10px;
         --blur: 0px;
       }
 
@@ -76,9 +84,14 @@
     </style>
 
     <script>
-      const inputs = document.querySelectorAll(".control , input");
+      const root = document.documentElement;
 
-      console.log(inputs);
+      function changeValue(id, value) {
+        const suffix = id != "base" ? "px" : "";
+        root.style.setProperty(`--${id}`, value + suffix);
+        console.log(value + suffix);
+      }
+      changeValue();
     </script>
   </body>
 </html>
