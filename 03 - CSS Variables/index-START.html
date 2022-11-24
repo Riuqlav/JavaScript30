@@ -85,11 +85,9 @@
 
     <script>
       const root = document.documentElement;
-
       function changeValue(id, value) {
         const suffix = id != "base" ? "px" : "";
         root.style.setProperty(`--${id}`, value + suffix);
-        console.log(value + suffix);
       }
     </script>
   </body>
