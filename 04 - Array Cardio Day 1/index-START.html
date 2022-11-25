@@ -109,11 +109,47 @@
 
       // 5. Sort the inventors by years lived
 
+      let sortByLivingYears = inventors.sort(
+        (inventorYounger, inventorOlder) => {
+          let younger = inventorYounger.passed - inventorYounger.year;
+          let older = inventorOlder.passed - inventorOlder.year;
+          return older - younger;
+        }
+      );
+
+      console.table(sortByLivingYears);
+
       // 6. create a list of Boulevards in Paris that contain 'de' anywhere in the name
       // https://en.wikipedia.org/wiki/Category:Boulevards_in_Paris
 
+      // const category = document.querySelector(".mw-category");
+      // const link = document.querySelectorAll("a");
+      // const de = link.map((link) => link.innerHTML);
+
+      // console.table(de);
+
       // 7. sort Exercise
       // Sort the people alphabetically by last name
+
+      const compareStrings = (a, b) => {
+        if (a < b) return -1;
+        if (a > b) return 1;
+
+        return 0;
+      };
+
+      const compare = (b, a) => {
+        const splitB = b.split(" ");
+        const splitA = a.split(" ");
+        const lastB = splitB[splitB.length - 1];
+        const lastA = splitA[splitA.length - 1];
+
+        return lastB === lastA
+          ? compareStrings(splitB[0], splitA[0])
+          : compareStrings(lastB, lastA);
+      };
+
+      console.table(people.sort(compare));
 
       // 8. Reduce Exercise
       // Sum up the instances of each of these
@@ -133,6 +169,12 @@
         "car",
         "truck",
       ];
+
+      let uniqs = data.reduce((acc, val) => {
+        acc[val] = acc[val] === undefined ? 1 : (acc[val] += 1);
+        return acc;
+      }, {});
+      console.log(uniqs);
     </script>
   </body>
 </html>
